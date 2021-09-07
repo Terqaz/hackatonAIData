@@ -1,15 +1,12 @@
-import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +15,8 @@ public class Main {
     public static void main(String[] args) throws IOException, CsvException {
         List<String[]> csv = readCsv("csv\\short.csv");
 //        printHeaders(csv.get(0));
+
+        csv.remove(0);
 
         ReportMaker reportMaker = new ReportMaker()
                 .addBlock("Общее количество прохождений Зачета",
@@ -28,43 +27,15 @@ public class Main {
                                 .map(s -> s[0]) // UIDn - код имени участника (коды присоены в алфавитном порядке)
                                 .distinct().count())
 
-                .addBlock("количество уникальных участников Зачета, приступивших к прохождению по восьми подгруппам зачета в отдельности",
+                .addBlock("Количество уникальных участников Зачета, приступивших к прохождению по восьми " +
+                                "подгруппам зачета в отдельности",
                         csv.stream().collect(Collectors.groupingBy(
-                                s -> {
-                                    int groupNumber =
-                                    switch (s[9]) {
-                                        case "Педагоги":
-                                            switch (Integer.parseInt(s[10])) {// Тип участника
-                                                case 0:
-                                                    break;
-                                                case 1:
-                                                    break;
-                                                case 2:
-                                                    break;
-                                                case 3:
-                                                    break;
-                                            }
-                                            break;
-
-                                        case "Родители":
-                                            switch (Integer.parseInt(s[10])) {// Тип участника
-                                                case 0:
-                                                    break;
-                                                case 1:
-                                                    break;
-                                                case 2:
-                                                    break;
-                                                case 3:
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                    s[9]
-                                }, // Тип участника
-                                Collectors.toSet()
+                                s -> DataUtils.getSubgroupCategoriesMapping().get(s[9]).get(s[10]),
+                                Collectors.counting()
                         )));
 
-//        System.out.println(reportMaker.toString());
+        System.out.println(reportMaker.toString());
+
 
 //        Уровень педагогических знаний неравномерен по регионам России
 
